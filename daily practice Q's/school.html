@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Student Portal</title>
+    
+    <!-- This is our CSS section. We only use basic styles here. -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4; 
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #4a55a2; 
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        section a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            margin-left: 10px;
+            background-color: #6a76c6; 
+            transition: background-color 0.3s;
+        }
+
+        
+        .content {
+            padding: 20px;
+            max-width: 800px;
+            margin: 20px auto; 
+        }
+
+        
+        #profile-view {
+            display: none;
+        }
+        
+        
+        #profile-view:target {
+            display: block;
+        }
+
+        
+        #profile-view:target + #welcome-view {
+            display: none;
+        }
+        #welcome-view {
+            display: block;
+        }
+        
+        .profile-box {
+            background-color: #ffe0b2; 
+            padding: 30px;
+            border: 1px solid #ff9800; 
+        }
+
+        
+        .profile-info {
+            display: flex; 
+            gap: 20px;
+        }
+
+        .student-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%; 
+            overflow: hidden;
+            border: 3px solid #ff9800;
+        }
+        
+        .student-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .info-detail {
+            margin-bottom: 10px;
+            padding: 5px;
+            background-color: white; 
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .info-value {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. HEADER & MENU -->
+    <header>
+        <div class="logo">Ap model School</div>
+        <section>
+            <a href="#">Home</a>
+            <a href="#profile-view">Student Profile</a>
+        </section>
+    </header>
+
+    <!-- 2. MAIN CONTENT AREA -->
+    <div class="content">
+        
+        <div id="profile-view" class="profile-box">
+            <h3 style="color: #d84315; margin-top: 0;">Student Profile</h3>
+
+            <div class="profile-info">
+                
+                <!-- Student Image -->
+                <div class="student-image">
+                    <img src="image.jpg" alt="Student Image" >
+                </div>
+                
+                <!-- Student Information -->
+                <div>
+                    <h4 style="margin-top: 0; color: #333;">Student Information</h4>
+                    
+                    <div class="info-detail">
+                        <span class="info-label">Name:</span> 
+                        <span class="info-value">charan reddy</span>
+                    </div>
+                    
+                    <div class="info-detail">
+                        <span class="info-label">ID:</span> 
+                        <span class="info-value">39</span>
+                    </div>
+
+                    <div class="info-detail">
+                        <span class="info-label">Grade:</span> 
+                        <span class="info-value">11th Grade</span>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- WELCOME PAGE VIEW (Visible by default) -->
+        <div id="welcome-view" class="profile-box" style="background-color: white;">
+            <h3 style="color: #4a55a2; text-align: center; margin-top: 0;">Welcome Page</h3>
+            <p style="text-align: center;">You are currently on the Welcome page. Click "Student Profile" in the blue bar above to see your details.</p>
+        </div>
+
+    </div>
+    
+    
+
+</body>
+</html>

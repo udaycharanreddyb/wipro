@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Random User Fetch</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+        #userCard {
+            margin-top: 20px;
+            padding: 15px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        #userCard img {
+            width: 100px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Random User Generator</h2>
+    <button id="fetchBtn">Get Random User</button>
+
+    <div id="userCard"></div>
+
+    <script>
+        document.getElementById("fetchBtn").addEventListener("click", () => {
+            fetch("https://randomuser.me/api/")
+                .then(response => response.json())
+                .then(data => {
+                    const user = data.results[0];
+
+                    // user details
+                    const name = `${user.name.first} ${user.name.last}`;
+                    const email = user.email;
+                    const picture = user.picture.large;
+
+                    // display on webpage
+                    document.getElementById("userCard").innerHTML = `
+                        <img src="${picture}" alt="User Picture">
+                        <h3>${name}</h3>
+                        <p><strong>Email:</strong> ${email}</p>
+                    `;
+                })
+                .catch(error => {
+                    console.error("Error fetching random user:", error);
+                });
+        });
+    </script>
+
+</body>
+</html>

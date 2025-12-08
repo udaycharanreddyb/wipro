@@ -1,0 +1,40 @@
+Question 1
+Classes & Objects in Java
+
+
+Instructions:
+
+Write a program that takes input from the user and creates an object of a class named 'Person'. The 'Person' class should have two member variables: 'name' and 'age'. The program should prompt the user to enter their name and age, create a 'Person' object with the entered values, and then display the name and age of the person.
+
+Sample Input & Output:
+
+Sample Input:
+John
+25
+
+Sample Output:
+Name: John
+Age: 25
+Hints:
+1. Use the 'Scanner' class to read input from the user.
+2. Create a class named 'Person' with two member variables: 'name' and 'age'.
+3. Use the 'new' keyword to create an object of the 'Person' class.
+4. Use the dot operator to access the member variables of the 'Person' object.
+5. Print the name and age of the person using the 'System.out.println()' method.
+
+Your answer
+-----------------------------------------------------------------------------------------
+import java.util.Scanner;
+
+public class Person {
+    // TODO: Define the 'Person' class with 'name' and 'age' member variables
+
+    public static void main(String[] args) {
+        // TODO: Write your code here
+        Scanner sc = new Scanner (System.in);
+        String name = sc.nextLine();
+        int age = sc.nextInt();
+        System.out.println("Name: "+name);
+        System.out.println("Age: "+age);
+    }
+}

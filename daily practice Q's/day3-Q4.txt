@@ -1,0 +1,46 @@
+constructor overloading
+Create one default constructor to initialize the fields as default values to calculate volume of the cube and one parameterized constructor to pass parameters and initialize them accordingly. You can pass 3 integer parameters at runtime 
+(While using parameterized constructor, the program, should also display the output with the default constructor also)
+
+Sample output- with parametrized constructor
+Constructor without parameter
+Volume is 1000.0
+Constructor with parameter
+Volume is 192.0
+
+Your answer
+
+import java.util.*;
+
+public class Constructor{
+    int length, breadth, height;
+    double volume;
+
+    Constructor() {
+        System.out.println("Constructor without parameter");
+        length =10;
+        breadth = 10;
+        height = 10;
+        volume = length*breadth*height;
+        System.out.println("Volume is "+volume);
+    }
+    Constructor(int l, int b, int h){
+        this();
+        System.out.println("Constructor with parameter");
+        length = l;
+        breadth = b;
+        height = h;
+        volume = length*breadth*height;
+        System.out.println("Volume is " +volume);
+    }
+
+
+    public static void main(String[] args) {
+   Scanner s=new Scanner(System.in);
+   int l =s.nextInt();
+   int b =s.nextInt();
+   int h =s.nextInt();
+   Constructor cuboid = new Constructor(l,b,h);
+   s.close();
+   }
+}
