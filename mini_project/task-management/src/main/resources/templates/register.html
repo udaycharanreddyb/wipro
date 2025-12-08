@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Register User</title>
+</head>
+<body>
+<h1>Register</h1>
+
+<form id="registerForm">
+    <label>Username:
+        <input type="text" id="username" required>
+    </label>
+    <br><br>
+
+    <label>Password:
+        <input type="password" id="password" required>
+    </label>
+    <br><br>
+
+    <label>Role:</label>
+    <label>
+        <input type="radio" name="role" value="TEAM_LEAD" checked> TEAM_LEAD
+    </label>
+    <label>
+        <input type="radio" name="role" value="SD"> SD
+    </label>
+    <br><br>
+
+    <button type="submit">Register</button>
+</form>
+
+<script>
+    const form = document.getElementById('registerForm');
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault(); // stop page refresh
+
+        // get selected radio value
+        const selectedRole = document.querySelector('input[name="role"]:checked').value;
+
+        const data = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+            role: selectedRole
+        };
+
+        fetch('/api/user/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(json => {
+            console.log('Success:', json);
+            alert('User registered successfully!');
+        })
+        .catch(err => {
+            console.error('Fetch error:', err);
+            alert('Error registering user!');
+        });
+    });
+</script>
+
+</body>
+</html>

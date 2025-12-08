@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Team Lead Dashboard</title>
+</head>
+<body>
+<h1>Team Lead Dashboard</h1>
+<p id="welcome"></p>
+<button id="logoutBtn">Logout</button>
+
+<hr>
+
+<h2>Create Task</h2>
+<form id="createTaskForm">
+    <label>Title:
+        <input type="text" id="createTitle" required>
+    </label><br><br>
+
+    <label>Assign To (SD username):
+        <input type="text" id="createAssignedTo" required>
+    </label><br><br>
+
+    <button type="submit">Create Task</button>
+</form>
+
+<pre id="createTaskResponse"></pre>
+
+<hr>
+
+<h2>Update Task (Full)</h2>
+<form id="updateTaskForm">
+    <label>Task ID:
+        <input type="number" id="updateId" required>
+    </label><br><br>
+
+    <label>Title:
+        <input type="text" id="updateTitle" required>
+    </label><br><br>
+
+    <label>Assign To (SD username):
+        <input type="text" id="updateAssignedTo" required>
+    </label><br><br>
+
+    <label>Status:
+        <select id="updateStatus">
+            <option value="PENDING">PENDING</option>
+            <option value="IN_PROGRESS">IN_PROGRESS</option>
+            <option value="COMPLETED">COMPLETED</option>
+        </select>
+    </label><br><br>
+
+    <button type="submit">Update Task</button>
+</form>
+
+<pre id="updateTaskResponse"></pre>
+
+<hr>
+
+<h2>Delete Task</h2>
+<form id="deleteTaskForm">
+    <label>Task ID:
+        <input type="number" id="deleteId" required>
+    </label>
+    <button type="submit">Delete</button>
+</form>
+
+<pre id="deleteTaskResponse"></pre>
+
+<hr>
+
+<h2>All Tasks</h2>
+<button id="refreshTasksBtn">Refresh Tasks</button>
+<br><br>
+<table border="1" cellpadding="5" id="tasksTable">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Status</th>
+        <th>Assigned To</th>
+        <th>Created By</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<pre id="tasksError"></pre>
+
+<script>
+    const token = localStorage.getItem('jwtToken');
+    const username = localStorage.getItem('username');
+    const role = localStorage.getItem('role');
+
+    const welcome = document.getElementById('welcome');
+
+    if (!token || !username || !role) {
+        alert('Not logged in');
+        window.location.href = '/login.html';
+    } else if (role !== 'TEAM_LEAD') {
+        alert('You are not TEAM_LEAD');
+        window.location.href = '/login.html';
+    } else {
+        welcome.textContent = 'Logged in as ' + username + ' (' + role + ')';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.clear();
+        window.location.href = '/login.html';
+    });
+
+    function authFetch(url, options) {
+        options = options || {};
+        options.headers = options.headers || {};
+        options.headers['Authorization'] = 'Bearer ' + token;
+        if (!options.headers['Content-Type'] && options.method && options.method !== 'GET') {
+            options.headers['Content-Type'] = 'application/json';
+        }
+        return fetch(url, options);
+    }
+
+    // CREATE TASK
+    const createTaskForm = document.getElementById('createTaskForm');
+    const createTaskResponse = document.getElementById('createTaskResponse');
+
+    createTaskForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const data = {
+            title: document.getElementById('createTitle').value,
+            assignedToUsername: document.getElementById('createAssignedTo').value
+        };
+
+        authFetch('/api/tasks', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        })
+            .then(async res => {
+                const text = await res.text();
+                if (!res.ok) {
+                    createTaskResponse.textContent = 'HTTP ' + res.status + ' ' + res.statusText + '\n\n' + text;
+                    return;
+                }
+                createTaskResponse.textContent = text;
+                loadTasks();
+            })
+            .catch(err => {
+                createTaskResponse.textContent = 'Error: ' + err;
+            });
+    });
+
+    // UPDATE TASK
+    const updateTaskForm = document.getElementById('updateTaskForm');
+    const updateTaskResponse = document.getElementById('updateTaskResponse');
+
+    updateTaskForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const id = document.getElementById('updateId').value;
+
+        const data = {
+            title: document.getElementById('updateTitle').value,
+            assignedToUsername: document.getElementById('updateAssignedTo').value,
+            status: document.getElementById('updateStatus').value
+        };
+
+        authFetch('/api/tasks/' + id, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        })
+            .then(async res => {
+                const text = await res.text();
+                if (!res.ok) {
+                    updateTaskResponse.textContent = 'HTTP ' + res.status + ' ' + res.statusText + '\n\n' + text;
+                    return;
+                }
+                updateTaskResponse.textContent = text;
+                loadTasks();
+            })
+            .catch(err => {
+                updateTaskResponse.textContent = 'Error: ' + err;
+            });
+    });
+
+    // DELETE TASK
+    const deleteTaskForm = document.getElementById('deleteTaskForm');
+    const deleteTaskResponse = document.getElementById('deleteTaskResponse');
+
+    deleteTaskForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const id = document.getElementById('deleteId').value;
+
+        authFetch('/api/tasks/' + id, {
+            method: 'DELETE'
+        })
+            .then(async res => {
+                if (res.status === 204) {
+                    deleteTaskResponse.textContent = 'Task deleted';
+                    loadTasks();
+                    return;
+                }
+                const text = await res.text();
+                deleteTaskResponse.textContent = 'HTTP ' + res.status + ' ' + res.statusText + '\n\n' + text;
+            })
+            .catch(err => {
+                deleteTaskResponse.textContent = 'Error: ' + err;
+            });
+    });
+
+    // LOAD TASKS
+    const tasksTableBody = document.querySelector('#tasksTable tbody');
+    const tasksError = document.getElementById('tasksError');
+    const refreshTasksBtn = document.getElementById('refreshTasksBtn');
+
+    function loadTasks() {
+        tasksError.textContent = '';
+        tasksTableBody.innerHTML = '';
+
+        authFetch('/api/tasks', { method: 'GET' })
+            .then(async res => {
+                const text = await res.text();
+                if (!res.ok) {
+                    tasksError.textContent = 'HTTP ' + res.status + ' ' + res.statusText + '\n\n' + text;
+                    return;
+                }
+                const tasks = JSON.parse(text);
+                tasks.forEach(t => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML =
+                        '<td>' + t.id + '</td>' +
+                        '<td>' + t.title + '</td>' +
+                        '<td>' + t.status + '</td>' +
+                        '<td>' + t.assignedTo + '</td>' +
+                        '<td>' + t.createdBy + '</td>';
+                    tasksTableBody.appendChild(tr);
+                });
+            })
+            .catch(err => {
+                tasksError.textContent = 'Error: ' + err;
+            });
+    }
+
+    refreshTasksBtn.addEventListener('click', loadTasks);
+    loadTasks();
+</script>
+</body>
+</html>

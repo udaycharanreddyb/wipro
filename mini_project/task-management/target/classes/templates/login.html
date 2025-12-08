@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Login User</title>
+</head>
+<body>
+<h1>Login</h1>
+
+<form id="loginForm">
+    <label>Username:
+        <input type="text" id="username" required>
+    </label>
+    <br><br>
+
+    <label>Password:
+        <input type="password" id="password" required>
+    </label>
+    <br><br>
+
+    <button type="submit">Login</button>
+</form>
+
+<script>
+    const loginForm = document.getElementById('loginForm');
+
+    loginForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const data = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+        };
+
+        fetch('/api/user/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(async (res) => {
+            const text = await res.text();
+
+            if (!res.ok) {
+                alert('HTTP ' + res.status + ' ' + res.statusText + '\n\n' + text);
+                return;
+            }
+
+            const json = JSON.parse(text);
+
+            // Save token, username, role in localStorage
+            localStorage.setItem('jwtToken', json.token);
+            localStorage.setItem('username', json.username);
+            localStorage.setItem('role', json.role);
+
+            // Redirect based on role
+            if (json.role === 'TEAM_LEAD') {
+                window.location.href = '/lead-dashboard.html';
+            } else if (json.role === 'SD') {
+                window.location.href = '/sd-dashboard.html';
+            } else {
+                alert('Unknown role: ' + json.role);
+            }
+        })
+        .catch(err => {
+            alert('Fetch error: ' + err);
+        });
+    });
+</script>
+</body>
+</html>

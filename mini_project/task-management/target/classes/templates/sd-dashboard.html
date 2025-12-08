@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SD Dashboard</title>
+</head>
+<body>
+<h1>Software Developer Dashboard</h1>
+<p id="welcome"></p>
+<button id="logoutBtn">Logout</button>
+
+<hr>
+
+<h2>My Tasks</h2>
+<button id="refreshTasksBtn">Refresh</button>
+<br><br>
+
+<table border="1" cellpadding="5" id="tasksTable">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Status</th>
+        <th>Assigned To</th>
+        <th>Created By</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<pre id="tasksError"></pre>
+
+<hr>
+
+<h2>Update Task Status</h2>
+<p>SD can only update status of own tasks.</p>
+<form id="updateStatusForm">
+    <label>Task ID:
+        <input type="number" id="statusTaskId" required>
+    </label><br><br>
+
+    <label>New Status:
+        <select id="statusNew">
+            <option value="PENDING">PENDING</option>
+            <option value="IN_PROGRESS">IN_PROGRESS</option>
+            <option value="COMPLETED">COMPLETED</option>
+        </select>
+    </label><br><br>
+
+    <button type="submit">Update Status</button>
+</form>
+
+<pre id="statusResponse"></pre>
+
+<script>
+    const token = localStorage.getItem('jwtToken');
+    const username = localStorage.getItem('username');
+    const role = localStorage.getItem('role');
+
+    const welcome = document.getElementById('welcome');
+
+    if (!token || !username || !role) {
+        alert('Not logged in');
+        window.location.href = '/login.html';
+    } else if (role !== 'SD') {
+        alert('You are not SD');
+        window.location.href = '/login.html';
+    } else {
+        welcome.textContent = 'Logged in as ' + username + ' (' + role + ')';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.clear();
+        window.location.href = '/login.html';
+    });
+
+    function authFetch(url, options) {
+        options = options || {};
+        options.headers = options.headers || {};
+        options.headers['Authorization'] = 'Bearer ' + token;
+        if (!options.headers['Content-Type'] && options.method && options.method !== 'GET') {
+            options.headers['Content-Type'] = 'application/json';
+        }
+        return fetch(url, options);
+    }
+
+    // Load tasks
+    const tasksTableBody = document.querySelector('#tasksTable tbody');
+    const tasksError = document.getElementById('tasksError');
+    const refreshTasksBtn = document.getElementById('refreshTasksBtn');
+
+    function loadTasks() {
+        tasksError.textContent = '';
+        tasksTableBody.innerHTML = '';
+
+        authFetch('/api/tasks', { method: 'GET' })
+            .then(async res => {
+                const text = await res.text();
+                if (!res.ok) {
+                    tasksError.textContent = 'HTTP ' + res.status + ' ' + res.statusText + '\n\n' + text;
+                    return;
+                }
+                const tasks = JSON.parse(text);
+                tasks.forEach(t => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML =
+                        '<td>' + t.id + '</td>' +
+                        '<td>' + t.title + '</td>' +
+                        '<td>' + t.status + '</td>' +
+                        '<td>' + t.assignedTo + '</td>' +
+                        '<td>' + t.createdBy + '</td>';
+                    tasksTableBody.appendChild(tr);
+                });
+            })
+            .catch(err => {
+                tasksError.textContent = 'Error: ' + err;
+            });
+    }
+
+    refreshTasksBtn.addEventListener('click', loadTasks);
+
+    // Update status
+    const updateStatusForm = document.getElementById('updateStatusForm');
+    const statusResponse = document.getElementById('statusResponse');
+
+    updateStatusForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const id = document.getElementById('statusTaskId').value;
+        const newStatus = document.getElementById('statusNew').value;
+
+        const data = { status: newStatus };
+
+        authFetch('/api/tasks/' + id + '/status', {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        })
+            .then(async res => {
+                const text = await res.text();
+                if (!res.ok) {
+                    statusResponse.textContent = 'HTTP ' + res.status + ' ' + res.statusText + '\n\n' + text;
+                    return;
+                }
+                statusResponse.textContent = text;
+                loadTasks();
+            })
+            .catch(err => {
+                statusResponse.textContent = 'Error: ' + err;
+            });
+    });
+
+    loadTasks();
+</script>
+</body>
+</html>
